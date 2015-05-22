@@ -61,7 +61,8 @@ class LxmlParserLinkExtractor(object):
         # hacky way to get the underlying lxml parsed document
         for el, attr, attr_val in self._iter_links(selector._root):
             # pseudo lxml.html.HtmlElement.make_links_absolute(base_url)
-            attr_val = urljoin(base_url, attr_val)
+            # attr_val = urljoin(base_url, attr_val)
+            attr_val = tricky_join(base_url, attr_val)
             url = self.process_attr(attr_val)
             if url is None:
                 continue
@@ -70,6 +71,7 @@ class LxmlParserLinkExtractor(object):
             # to fix relative links after process_value
             # url = urljoin(response_url, url)
             url = tricky_join(response_url, url)
+            print url
             link = Link(url, _collect_string_content(el) or u'',
                 nofollow=True if el.get('rel') == 'nofollow' else False)
             links.append(link)
