@@ -27,6 +27,18 @@ def _nons(tag):
     return tag
 
 
+def tricky_join(url, href):
+    """ the standard urljoin fails when it joins "http://www.example.com/"
+        and "example.com/a", so this tricky method prepends "http" into
+        "example.com" (if exists) before joining
+    """
+
+    result = re.search(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}', href)
+    if result:
+        href = 'http://' + href
+    return urljoin(url, href)
+
+
 class LxmlParserLinkExtractor(object):
     def __init__(self, tag="a", attr="href", process=None, unique=False):
         self.scan_tag = tag if callable(tag) else lambda t: t == tag
@@ -56,7 +68,8 @@ class LxmlParserLinkExtractor(object):
             if isinstance(url, unicode):
                 url = url.encode(response_encoding)
             # to fix relative links after process_value
-            url = urljoin(response_url, url)
+            # url = urljoin(response_url, url)
+            url = tricky_join(response_url, url)
             link = Link(url, _collect_string_content(el) or u'',
                 nofollow=True if el.get('rel') == 'nofollow' else False)
             links.append(link)
