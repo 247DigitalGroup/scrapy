@@ -39,7 +39,7 @@ def tricky_join(url, href):
     result = re.search(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}', href)
     if result:
         href = 'http://' + href
-    return urljoin(url, href)
+    return urljoin(url, href.strip())
 
 
 class LxmlParserLinkExtractor(object):
