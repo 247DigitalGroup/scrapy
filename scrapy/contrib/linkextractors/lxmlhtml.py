@@ -28,11 +28,14 @@ def _nons(tag):
 
 
 def tricky_join(url, href):
-    """ the standard urljoin fails when it joins "http://www.example.com/"
+    """ - the standard urljoin fails when it joins "http://www.example.com/"
         and "example.com/a", so this tricky method prepends "http" into
         "example.com" (if exists) before joining
+        - href must not contain spaces 
     """
 
+    if ' ' in href:
+        return url
     result = re.search(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}', href)
     if result:
         href = 'http://' + href
