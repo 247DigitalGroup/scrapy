@@ -74,7 +74,6 @@ class LxmlParserLinkExtractor(object):
             # to fix relative links after process_value
             # url = urljoin(response_url, url)
             url = tricky_join(response_url, url)
-            print url
             link = Link(url, _collect_string_content(el) or u'',
                 nofollow=True if el.get('rel') == 'nofollow' else False)
             links.append(link)
