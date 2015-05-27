@@ -61,7 +61,7 @@ def detect(pil_image):
     " detect faces in image "
 
     image = cv2.cvtColor(np.asarray(pil_image), cv2.COLOR_BGR2GRAY)
-    flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+    flags = cv2.CV_HAAR_SCALE_IMAGE
 
     # frontal faces
     classifier = cv2.CascadeClassifier(CASCADE_PATH)
