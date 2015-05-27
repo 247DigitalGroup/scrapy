@@ -82,7 +82,8 @@ class ImagesPipeline(FilesPipeline):
         image, buf = self.convert_image(orig_image)
         yield path, image, buf
         
-        face_detected = facedetect.detect(image)
+        # face_detected = facedetect.detect(image)
+        face_detected = False
 
         for thumb_id, size in self.THUMBS.iteritems():
             thumb_path = self.thumb_path(request, thumb_id, response=response, info=info)
