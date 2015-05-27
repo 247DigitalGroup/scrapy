@@ -14,6 +14,7 @@ from scrapy.http import Request
 from scrapy.exceptions import DropItem
 #TODO: from scrapy.contrib.pipeline.media import MediaPipeline
 from scrapy.contrib.pipeline.files import FileException, FilesPipeline
+from scrapy.facedetect import facedetect
 
 
 class NoimagesDrop(DropItem):
@@ -35,6 +36,8 @@ class ImagesPipeline(FilesPipeline):
     THUMBS = {}
     DEFAULT_IMAGES_URLS_FIELD = 'image_urls'
     DEFAULT_IMAGES_RESULT_FIELD = 'images'
+    # CASCADE_PATH = '/usr/local/share/haarcascade_frontalface_alt2.xml'
+    # classifier = cv2.CascadeClassifier(CASCADE_PATH)
 
     @classmethod
     def from_settings(cls, settings):
@@ -78,13 +81,15 @@ class ImagesPipeline(FilesPipeline):
 
         image, buf = self.convert_image(orig_image)
         yield path, image, buf
+        
+        face_detected = facedetect.detect(image)
 
         for thumb_id, size in self.THUMBS.iteritems():
             thumb_path = self.thumb_path(request, thumb_id, response=response, info=info)
-            thumb_image, thumb_buf = self.convert_image(image, size)
+            thumb_image, thumb_buf = self.convert_image(image, size, face_detected)
             yield thumb_path, thumb_image, thumb_buf
 
-    def convert_image(self, image, size=None):
+    def convert_image(self, image, size=None, face_detected=None):
         if image.format == 'PNG' and image.mode == 'RGBA':
             background = Image.new('RGBA', image.size, (255, 255, 255))
             background.paste(image, image)
@@ -92,12 +97,26 @@ class ImagesPipeline(FilesPipeline):
         elif image.mode != 'RGB':
             image = image.convert('RGB')
 
+        quality = 100
+
         if size:
             image = image.copy()
-            image.thumbnail(size, Image.ANTIALIAS)
+            x1 = y1 = 0
+            x2, y2 = image.size
+            width_ratio = 1.0 * x2/size[0] 
+            height_ratio = 1.0 * y2/size[1] 
+            if height_ratio > width_ratio:
+                y1 = int(y2/2 - size[1]*width_ratio/2)
+                y2 = int(y2/2 + size[1]*width_ratio/2)
+            else:
+                x1 = int(x2/2 - size[0]*height_ratio/2)
+                x2 = int(x2/2 + size[0]*height_ratio/2)
+            image = image.crop((x1,y1,x2,y2))
+            image = image.resize(size, Image.BICUBIC)
+            quality = 80
 
         buf = StringIO()
-        image.save(buf, 'JPEG')
+        image.save(buf, 'JPEG', quality=quality)
         return image, buf
 
     def get_media_requests(self, item, info):
