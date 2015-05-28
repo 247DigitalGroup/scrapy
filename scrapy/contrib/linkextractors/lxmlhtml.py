@@ -13,6 +13,7 @@ from scrapy.utils.misc import arg_to_iter
 from scrapy.utils.python import unique as unique_list, str_to_unicode
 from scrapy.linkextractor import FilteringLinkExtractor
 from scrapy.utils.response import get_base_url
+from url_utils import tricky_join
 
 
 # from lxml/src/lxml/html/__init__.py
@@ -25,21 +26,6 @@ def _nons(tag):
         if tag[0] == '{' and tag[1:len(XHTML_NAMESPACE)+1] == XHTML_NAMESPACE:
             return tag.split('}')[-1]
     return tag
-
-
-def tricky_join(url, href):
-    """ - the standard urljoin fails when it joins "http://www.example.com/"
-        and "example.com/a", so this tricky method prepends "http" into
-        "example.com" (if exists) before joining
-        - href must not contain spaces 
-    """
-
-    if ' ' in href:
-        return url
-    result = re.search(r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}', href)
-    if result:
-        href = 'http://' + href
-    return urljoin(url, href.strip())
 
 
 class LxmlParserLinkExtractor(object):
