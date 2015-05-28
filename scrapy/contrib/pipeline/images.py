@@ -104,17 +104,18 @@ class ImagesPipeline(FilesPipeline):
             image = image.copy()
             x1 = y1 = 0
             x2, y2 = image.size
-            width_ratio = 1.0 * x2/size[0] 
-            height_ratio = 1.0 * y2/size[1] 
-            if height_ratio > width_ratio:
-                y1 = int(y2/2 - size[1]*width_ratio/2)
-                y2 = int(y2/2 + size[1]*width_ratio/2)
-            else:
-                x1 = int(x2/2 - size[0]*height_ratio/2)
-                x2 = int(x2/2 + size[0]*height_ratio/2)
-            image = image.crop((x1,y1,x2,y2))
-            image = image.resize(size, Image.BICUBIC)
-            quality = 80
+            if x2 >= size[0] and y2 >= size[1]:
+                width_ratio = 1.0 * x2/size[0] 
+                height_ratio = 1.0 * y2/size[1] 
+                if height_ratio > width_ratio:
+                    y1 = int(y2/2 - size[1]*width_ratio/2)
+                    y2 = int(y2/2 + size[1]*width_ratio/2)
+                else:
+                    x1 = int(x2/2 - size[0]*height_ratio/2)
+                    x2 = int(x2/2 + size[0]*height_ratio/2)
+                image = image.crop((x1,y1,x2,y2))
+                image = image.resize(size, Image.BICUBIC)
+                quality = 80
 
         buf = StringIO()
         image.save(buf, 'JPEG', quality=quality)
